@@ -32,38 +32,42 @@ def make_gauss(mu, ss, a):
 def gaussian_padding(v):
     n = len(v)
 
-    if n < 4:
+    if n < 2:
         raise Exception(f"Not enough data: {n} data points.")
 
     n, remainder = find_power_of_two(n)
-    pad_right = remainder // 2
-    pad_left = remainder - pad_right
+    if remainder == 0:
+        fade_in = []
+        fade_out = []
+    else:
+        pad_right = remainder // 2
+        pad_left = remainder - pad_right
 
-    # set sigma to be some fraction of the padding:
-    sigma = pad_left*0.333
-    ss = sigma**2
+        # set sigma to be some fraction of the padding:
+        sigma = pad_left*0.333
+        ss = sigma**2
 
-    d_first = v[1] - v[0]
-    d_last = v[-2] - v[-1]
-    mu_left = ss * d_first / v[0] + pad_left
-    mu_right = ss * d_last / v[-2] + pad_right
-    fit_gauss_l = make_gauss(mu_left, ss, 1.0)
-    fit_gauss_r = make_gauss(mu_right, ss, 1.0)
-    fit_left = fit_gauss_l(pad_left)
-    fit_right = fit_gauss_r(pad_right)
-    # avoid dividing by small values when attempting to fit
-    tol = 0.001
-    if fit_left < tol:
-        fit_left = tol
-    if fit_right < tol:
-        fit_right = tol
-    a_left = v[0] / fit_left
-    a_right = v[-1] / fit_right
-    left_gauss = make_gauss(mu_left, ss, a_left)
-    right_gauss = make_gauss(mu_right, ss, a_right)
-    fade_in = [(left_gauss(i), 0) for i in range(pad_left)]
-    fade_out = [(right_gauss(i), 0) for i in range(pad_right)]
-    fade_out.reverse()
+        d_first = v[1] - v[0]
+        d_last = v[-2] - v[-1]
+        mu_left = ss * d_first / v[0] + pad_left
+        mu_right = ss * d_last / v[-2] + pad_right
+        fit_gauss_l = make_gauss(mu_left, ss, 1.0)
+        fit_gauss_r = make_gauss(mu_right, ss, 1.0)
+        fit_left = fit_gauss_l(pad_left)
+        fit_right = fit_gauss_r(pad_right)
+        # avoid dividing by small values when attempting to fit
+        tol = 0.001
+        if fit_left < tol:
+            fit_left = tol
+        if fit_right < tol:
+            fit_right = tol
+        a_left = v[0] / fit_left
+        a_right = v[-1] / fit_right
+        left_gauss = make_gauss(mu_left, ss, a_left)
+        right_gauss = make_gauss(mu_right, ss, a_right)
+        fade_in = [(left_gauss(i), 0) for i in range(pad_left)]
+        fade_out = [(right_gauss(i), 0) for i in range(pad_right)]
+        fade_out.reverse()
 
     new_v = fade_in + [(x, 0) for x in v] + fade_out
     return new_v
@@ -103,7 +107,7 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/92) for x in range(600)]
+    signal = [cos(x*TWO_PI/92) for x in range(1022)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     print(len(padded_signal))
