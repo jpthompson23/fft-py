@@ -21,13 +21,10 @@ def make_omega(n, k, is_forward):
 def find_power_of_two(n):
     if n < 2:
         raise Exception(f"Not enough data: {n} data points.")
-    a = 1
-    while True:
-        res = 2**a
-        if res >= n:
-            return res, res - n
-        else:
-            a += 1
+    log_2_n = math.log2(n)
+    pow = math.ceil(log_2_n)
+    result = 2**pow
+    return result, result - n
 
 
 def make_gauss(mu, sigma, a):
@@ -39,8 +36,8 @@ def gaussian_padding(v):
     n = len(v)
 
     n, remainder = find_power_of_two(n)
-    pad_left = remainder // 2
-    pad_right = remainder - pad_left
+    pad_right = remainder // 2
+    pad_left = remainder - pad_right
 
     # sigma will be some fraction of the padding
     sigma = pad_left*0.333
@@ -93,6 +90,7 @@ def main():
     signal = [cos(x*TWO_PI/8.0) for x in range(500)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
+    print(len(padded_signal))
     recovered = ifft(t)
     n = len(t)
     t_left = t[n//2:0:-1]
