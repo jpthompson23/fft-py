@@ -15,10 +15,7 @@ def make_omega(n, k, is_forward):
     sin_theta = sin(theta)
 
     # complex exponential multiplication:
-    def rotate(x, y):
-        return (x*cos_theta - y*sin_theta, x*sin_theta + y*cos_theta)
-
-    return rotate
+    return lambda x, y: (x*cos_theta - y*sin_theta, x*sin_theta + y*cos_theta)
 
 
 def find_power_of_two(n):
