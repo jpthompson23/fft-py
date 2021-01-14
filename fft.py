@@ -81,8 +81,8 @@ def _fft(v, is_forward):
     for k in range(n//2):
         omega = make_omega(n, k, is_forward)
         omega_t_odd = omega(*t_odd[k])
-        t_res[k] = t_even[k][0] + omega_t_odd[0], t_even[k][1] + omega_t_odd[1]
-        t_res[k + n//2] = t_even[k][0] - omega_t_odd[0], t_even[k][1] - omega_t_odd[1]
+        t_res[k] = (t_even[k][0] + omega_t_odd[0], t_even[k][1] + omega_t_odd[1])
+        t_res[k + n//2] = (t_even[k][0] - omega_t_odd[0], t_even[k][1] - omega_t_odd[1])
     return t_res
 
 
