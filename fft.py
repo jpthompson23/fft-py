@@ -93,7 +93,7 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/64.0) for x in range(1300)]
+    signal = [cos(x*TWO_PI/8.0) for x in range(500)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     recovered = ifft(t)
@@ -103,11 +103,11 @@ def main():
     transformed = t_left + t_right
     transformed_mag = [math.sqrt(z[0]**2 + z[1]**2) for z in transformed]
     recovered_real = [z[0] for z in recovered]
-    # print(transformed_mag)
+    print(transformed_mag)
     plt.ylim(-1.5, 1.5)
     plt.plot(padded_signal)
-    plt.plot(transformed_mag)
     plt.plot(recovered_real)
+    plt.plot(transformed_mag)
 
 
 if __name__ == '__main__':
