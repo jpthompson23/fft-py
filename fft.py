@@ -46,7 +46,7 @@ def gaussian_padding(v):
     d_first = v[1] - v[0]
     d_last = v[-2] - v[-1]
     mu_left = ss * d_first / v[0] + pad_left
-    mu_right = ss * d_last / v[-1] + pad_right
+    mu_right = ss * d_last / v[-2] + pad_right
     fit_gauss_l = make_gauss(mu_left, ss, 1.0)
     fit_gauss_r = make_gauss(mu_right, ss, 1.0)
     fit_left = fit_gauss_l(pad_left)
