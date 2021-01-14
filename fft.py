@@ -51,8 +51,16 @@ def gaussian_padding(v):
     mu_right = ssr * d_last / v[-1] + pad_right
     fit_gauss_l = make_gauss(mu_left, ssl, 1.0)
     fit_gauss_r = make_gauss(mu_right, ssr, 1.0)
-    a_left = v[0] / fit_gauss_l(pad_left)
-    a_right = v[-1] / fit_gauss_r(pad_right)
+    fit_left = fit_gauss_l(pad_left)
+    fit_right = fit_gauss_r(pad_right)
+    if fit_left < 0.0001:
+        a_left = v[0]
+    else:
+        a_left = v[0] / fit_left
+    if fit_right < 0.0001:
+        a_right = v[-1]
+    else:
+        a_right = v[-1] / fit_right
     left_gauss = make_gauss(mu_left, ssl, a_left)
     right_gauss = make_gauss(mu_right, ssr, a_right)
     fade_in = [(left_gauss(i), 0) for i in range(pad_left)]
@@ -97,7 +105,7 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/160.0) for x in range(350)]
+    signal = [cos(x*TWO_PI/160.0) for x in range(650)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     print(len(padded_signal))
