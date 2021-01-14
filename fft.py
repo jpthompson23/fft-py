@@ -75,15 +75,15 @@ def _fft(v, is_forward):
     n = len(v)
     if n == 1:
         return v
-    v_e, v_o = v[::2], v[1::2]
-    y_e, y_o = _fft(v_e, is_forward), _fft(v_o, is_forward)
-    y = [(0, 0)]*n
+    v_even, v_odd = v[::2], v[1::2]
+    t_even, t_odd = _fft(v_even, is_forward), _fft(v_odd, is_forward)
+    t_res = [(0, 0)]*n
     for k in range(n//2):
-        omega_k = make_omega(n, k, is_forward)
-        omegak_yok = omega_k(*y_o[k])
-        y[k] = y_e[k][0] + omegak_yok[0], y_e[k][1] + omegak_yok[1]
-        y[k + n//2] = y_e[k][0] - omegak_yok[0], y_e[k][1] - omegak_yok[1]
-    return y
+        omega = make_omega(n, k, is_forward)
+        omega_t_odd = omega(*t_odd[k])
+        t_res[k] = t_even[k][0] + omega_t_odd[0], t_even[k][1] + omega_t_odd[1]
+        t_res[k + n//2] = t_even[k][0] - omega_t_odd[0], t_even[k][1] - omega_t_odd[1]
+    return t_res
 
 
 def main():
