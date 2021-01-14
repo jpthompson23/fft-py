@@ -45,8 +45,8 @@ def gaussian_padding(v):
     pad_left = remainder // 2
     pad_right = remainder - pad_left
 
-    # sigma 10% of padding
-    sigma = pad_left/10.0
+    # sigma will be some fraction of the padding
+    sigma = pad_left*0.333
 
     first, last = v[0], v[-1]
     left_gauss = make_gauss(pad_left, sigma, first)
@@ -93,7 +93,7 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/32.0) for x in range(1300)]
+    signal = [cos(x*TWO_PI/64.0) for x in range(1300)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     recovered = ifft(t)
