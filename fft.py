@@ -39,30 +39,28 @@ def gaussian_padding(v):
     pad_right = remainder // 2
     pad_left = remainder - pad_right
 
-    # sigma will be some fraction of the padding
-    sigma_left = pad_left*0.333
-    sigma_right = pad_right*0.333
-    ssl = sigma_left**2
-    ssr = sigma_right**2
+    # set sigma to be some fraction of the padding:
+    sigma = pad_left*0.333
+    ss = sigma**2
 
     d_first = v[1] - v[0]
     d_last = v[-2] - v[-1]
-    mu_left = ssl * d_first / v[0] + pad_left
-    mu_right = ssr * d_last / v[-1] + pad_right
-    fit_gauss_l = make_gauss(mu_left, ssl, 1.0)
-    fit_gauss_r = make_gauss(mu_right, ssr, 1.0)
+    mu_left = ss * d_first / v[0] + pad_left
+    mu_right = ss * d_last / v[-1] + pad_right
+    fit_gauss_l = make_gauss(mu_left, ss, 1.0)
+    fit_gauss_r = make_gauss(mu_right, ss, 1.0)
     fit_left = fit_gauss_l(pad_left)
     fit_right = fit_gauss_r(pad_right)
-    if fit_left < 0.0001:
-        a_left = v[0]
-    else:
-        a_left = v[0] / fit_left
-    if fit_right < 0.0001:
-        a_right = v[-1]
-    else:
-        a_right = v[-1] / fit_right
-    left_gauss = make_gauss(mu_left, ssl, a_left)
-    right_gauss = make_gauss(mu_right, ssr, a_right)
+    # avoid dividing by small values when attempting to fit
+    tol = 0.001
+    if fit_left < tol:
+        fit_left = tol
+    if fit_right < tol:
+        fit_right = tol
+    a_left = v[0] / fit_left
+    a_right = v[-1] / fit_right
+    left_gauss = make_gauss(mu_left, ss, a_left)
+    right_gauss = make_gauss(mu_right, ss, a_right)
     fade_in = [(left_gauss(i), 0) for i in range(pad_left)]
     fade_out = [(right_gauss(i), 0) for i in range(pad_right)]
     fade_out.reverse()
@@ -105,7 +103,7 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/160.0) for x in range(650)]
+    signal = [cos(x*TWO_PI/92) for x in range(600)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     print(len(padded_signal))
