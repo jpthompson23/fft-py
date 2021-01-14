@@ -19,32 +19,42 @@ def make_omega(n, k, is_forward):
 
 
 def find_power_of_two(n):
-    if n < 2:
-        raise Exception(f"Not enough data: {n} data points.")
     log_2_n = math.log2(n)
     pow = math.ceil(log_2_n)
     result = 2**pow
     return result, result - n
 
 
-def make_gauss(mu, sigma, a):
-    sigma_squared = sigma**2
-    return lambda x: a*math.exp(-0.5*(x - mu)**2 / sigma_squared)
+def make_gauss(mu, ss, a):
+    return lambda x: a*math.exp(-0.5*(x - mu)**2 / ss)
 
 
 def gaussian_padding(v):
     n = len(v)
+
+    if n < 4:
+        raise Exception(f"Not enough data: {n} data points.")
 
     n, remainder = find_power_of_two(n)
     pad_right = remainder // 2
     pad_left = remainder - pad_right
 
     # sigma will be some fraction of the padding
-    sigma = pad_left*0.333
+    sigma_left = pad_left*0.333
+    sigma_right = pad_right*0.333
+    ssl = sigma_left**2
+    ssr = sigma_right**2
 
-    first, last = v[0], v[-1]
-    left_gauss = make_gauss(pad_left, sigma, first)
-    right_gauss = make_gauss(pad_right, sigma, last)
+    d_first = v[1] - v[0]
+    d_last = v[-2] - v[-1]
+    mu_left = ssl * d_first / v[0] + pad_left
+    mu_right = ssr * d_last / v[-1] + pad_right
+    fit_gauss_l = make_gauss(mu_left, ssl, 1.0)
+    fit_gauss_r = make_gauss(mu_right, ssr, 1.0)
+    a_left = v[0] / fit_gauss_l(pad_left)
+    a_right = v[-1] / fit_gauss_r(pad_right)
+    left_gauss = make_gauss(mu_left, ssl, a_left)
+    right_gauss = make_gauss(mu_right, ssr, a_right)
     fade_in = [(left_gauss(i), 0) for i in range(pad_left)]
     fade_out = [(right_gauss(i), 0) for i in range(pad_right)]
     fade_out.reverse()
@@ -87,7 +97,7 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/8.0) for x in range(500)]
+    signal = [cos(x*TWO_PI/160.0) for x in range(350)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     print(len(padded_signal))
