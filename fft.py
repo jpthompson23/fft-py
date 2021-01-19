@@ -107,18 +107,19 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/92) for x in range(1600)]
+    signal = [cos(x*TWO_PI/29) for x in range(900)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     print(len(padded_signal))
     recovered = ifft(t)
     n = len(t)
-    t_left = t[n//2:0:-1]
-    t_right = t[n:n//2:-1]
-    transformed = t_left + t_right
+    t_pos = t[:n//2]
+    t_neg = t[n//2:]
+    # transpose the negative and positive sides of the fourier transform:
+    transformed = t_neg + t_pos
     transformed_mag = [math.sqrt(z[0]**2 + z[1]**2) for z in transformed]
     recovered_real = [z[0] for z in recovered]
-    print(transformed_mag)
+    # print(transformed_mag)
     plt.ylim(-1.5, 1.5)
     plt.plot(padded_signal)
     plt.plot(recovered_real)
