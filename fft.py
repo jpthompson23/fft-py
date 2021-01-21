@@ -47,27 +47,33 @@ def gaussian_padding(v):
         sigma = pad_left*0.333
         ss = sigma**2
 
+        tol = 0.001
         d_first = v[1] - v[0]
         d_last = v[-2] - v[-1]
-        mu_left = math.fabs(ss * d_first / v[0] + pad_left)
-        mu_right = math.fabs(ss * d_last / v[-2] + pad_right)
-        fit_gauss_l = make_gauss(mu_left, ss, 1.0)
-        fit_gauss_r = make_gauss(mu_right, ss, 1.0)
-        fit_left = fit_gauss_l(pad_left)
-        fit_right = fit_gauss_r(pad_right)
-        # avoid dividing by small values when attempting to fit
-        tol = 0.001
-        if fit_left < tol:
-            fit_left = tol
-        if fit_right < tol:
-            fit_right = tol
-        a_left = v[0] / fit_left
-        a_right = v[-1] / fit_right
-        left_gauss = make_gauss(mu_left, ss, a_left)
-        right_gauss = make_gauss(mu_right, ss, a_right)
-        fade_in = [(left_gauss(i), 0) for i in range(pad_left)]
-        fade_out = [(right_gauss(i), 0) for i in range(pad_right)]
-        fade_out.reverse()
+        if v[0] < tol or v[-2] < tol:
+            # avoid division by zero when values are small; simply pad with zeros:
+            fade_in = [(0, 0) for i in range(pad_left)]
+            fade_out = [(0, 0) for i in range(pad_right)]
+        else:
+            mu_left = math.fabs(ss * d_first / v[0] + pad_left)
+            mu_right = math.fabs(ss * d_last / v[-2] + pad_right)
+            fit_gauss_l = make_gauss(mu_left, ss, 1.0)
+            fit_gauss_r = make_gauss(mu_right, ss, 1.0)
+            fit_left = fit_gauss_l(pad_left)
+            fit_right = fit_gauss_r(pad_right)
+
+            # avoid dividing by small values when attempting to fit
+            if fit_left < tol:
+                fit_left = tol
+            if fit_right < tol:
+                fit_right = tol
+            a_left = v[0] / fit_left
+            a_right = v[-1] / fit_right
+            left_gauss = make_gauss(mu_left, ss, a_left)
+            right_gauss = make_gauss(mu_right, ss, a_right)
+            fade_in = [(left_gauss(i), 0) for i in range(pad_left)]
+            fade_out = [(right_gauss(i), 0) for i in range(pad_right)]
+            fade_out.reverse()
 
     new_v = fade_in + [(x, 0) for x in v] + fade_out
     return new_v
@@ -107,7 +113,9 @@ def _fft(v, is_forward):
 
 
 def main():
-    signal = [cos(x*TWO_PI/29) for x in range(900)]
+    gauss = make_gauss(450, 64, 0.5)
+    signal = [gauss(x) for x in range(900)]
+    # signal = [cos(x*TWO_PI/29) for x in range(900)]
     # signal = [1.0 for x in range(1900)]
     padded_signal, t = fft(signal)
     print(len(padded_signal))
